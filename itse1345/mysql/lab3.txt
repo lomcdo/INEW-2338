@@ -1,0 +1,438 @@
+SQL> 
+SQL> SET LINESIZE 200
+SQL> 
+SQL> SET PAGESIZE 200
+SQL> 
+SQL> TTITLE Center 'Lori Domingue Lab3'
+SQL> 
+SQL> 
+SQL> 
+SQL> /* Problem 01 */
+SQL> 
+SQL> 
+SQL> create or replace procedure find_emp_data
+  2  
+  3    (lv_emp_num in emp.empno%type)
+  4    is
+  5  
+  6    rec_emp emp%rowtype;
+  7  
+  8    begin
+  9  
+ 10      select * into rec_emp from emp
+ 11      where empno = lv_emp_num;
+ 12  
+ 13  
+ 14     dbms_output.put_line('Emp# LName  Job      '||
+ 15                           'Mgr  HireDate  Sal  Comm Dept');
+ 16  
+ 17  
+ 18      dbms_output.put_line(rec_emp.empno||' '||rec_emp.ename||' '||
+ 19        rec_emp.job||' '||rec_emp.mgr||' '||rec_emp.hiredate||' '||
+ 20        rec_emp.sal||' '||rec_emp.comm||' '||rec_emp.deptno);
+ 21  
+ 22  
+ 23      exception
+ 24        when no_data_found then
+ 25          -- error message
+ 26          dbms_output.put_line('Employee not found');
+ 27  
+ 28  end; -- end procedure find_emp_data
+ 29  /
+
+Procedure created.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> begin
+  2    find_emp_data(7654);
+  3    find_emp_data(7888);
+  4  
+  5  end; -- end find_emp_data driver
+  6  /
+Emp# LName  Job      Mgr  HireDate  Sal  Comm Dept                                                                                                                                                      
+7654 MARTIN SALESMAN 7698 28-SEP-99 1250 1400 30                                                                                                                                                        
+Employee not found                                                                                                                                                                                      
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> /* Problem 02 */
+SQL> 
+SQL> create or replace function compare_dates
+  2  
+  3    (date1 in date,
+  4     date2 in date)
+  5     -- return the int
+  6     return int
+  7    is
+  8  
+  9    lv_holder int;
+ 10  
+ 11    begin
+ 12  
+ 13      case
+ 14        when date1 < date2 then
+ 15          lv_holder := -1;
+ 16        when date1 = date2 then
+ 17          lv_holder := 0;
+ 18        when date1 > date2 then
+ 19          lv_holder := 1;
+ 20      end case;
+ 21  
+ 22  
+ 23      return lv_holder;
+ 24  
+ 25  end; -- end function compare_dates
+ 26  /
+
+Function created.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> declare
+  2                    
+  3    date1 date := '05-jan-20';
+  4    date2 date := '06-feb-02'; 
+  5  
+  6    begin
+  7  
+  8      dbms_output.put_line(date1||' and '||date2||' in returns   '
+  9                           ||compare_dates(date1, date2));
+ 10  
+ 11  
+ 12      dbms_output.put_line(date1||' and '||date1||' in returns   '
+ 13                           ||compare_dates(date1, date1));
+ 14  
+ 15  
+ 16      dbms_output.put_line(date2||' and '||date1||' in returns   '
+ 17                           ||compare_dates(date2, date1));
+ 18  
+ 19  end;  -- end compare_dates driver
+ 20  /
+05-JAN-20 and 06-FEB-02 in returns   -1                                                                                                                                                                 
+05-JAN-20 and 05-JAN-20 in returns   0                                                                                                                                                                  
+06-FEB-02 and 05-JAN-20 in returns   1                                                                                                                                                                  
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> /* Problem 03 */
+SQL> 
+SQL> create or replace procedure cust_info
+  2  
+  3   (pv_acc_id in customer.account_id%type,
+  4     rec_cust out customer%rowtype)
+  5    is
+  6  
+  7    begin
+  8  
+  9      select * into rec_cust from customer
+ 10      where account_id = pv_acc_id;
+ 11  
+ 12  
+ 13      exception
+ 14          when no_data_found then
+ 15  
+ 16            dbms_output.put_line('Account_ID not valid');
+ 17  
+ 18            -- 'return garbage'
+ 19            rec_cust.cust_id := 33333;
+ 20            rec_cust.cust_name := 'xxxxxxx';
+ 21            rec_cust.account_id := 'x-33333';
+ 22            rec_cust.account_type := 'xx';
+ 23            rec_cust.state := 'xx';
+ 24  
+ 25  end;
+ 26  /
+
+Procedure created.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> declare
+  2  
+  3    rec_cust customer%rowtype;
+  4  
+  5    begin
+  6  
+  7      cust_info('A-11101', rec_cust);
+  8  
+  9      dbms_output.put_line('Cust_ID   Cust_Name   Acct_ID   '||
+ 10                           'A_Type  State');
+ 11      -- print the info
+ 12      dbms_output.put_line(rec_cust.cust_id||'     '||rec_cust.cust_name||
+ 13                           '     '||rec_cust.account_id||'   '||
+ 14                           rec_cust.account_type||'      '||rec_cust.state);
+ 15  
+ 16  
+ 17      cust_info('B-11101', rec_cust);
+ 18      dbms_output.put_line('Cust_ID   Cust_Name   Acct_ID   '||
+ 19                           'A_Type  State');
+ 20      dbms_output.put_line(rec_cust.cust_id||'     '||rec_cust.cust_name||
+ 21                           '     '||rec_cust.account_id||'   '||
+ 22                           rec_cust.account_type||'      '||rec_cust.state);
+ 23  
+ 24  end; -- end cust_info driver
+ 25  
+ 26  
+ 27  /
+Cust_ID   Cust_Name   Acct_ID   A_Type  State                                                                                                                                                           
+90001     B and B     A-11101   PR      AK                                                                                                                                                              
+Account_ID not valid                                                                                                                                                                                    
+Cust_ID   Cust_Name   Acct_ID   A_Type  State                                                                                                                                                           
+33333     xxxxxxx     x-33333   xx      xx                                                                                                                                                              
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> /* Problem 04 */
+SQL> 
+SQL> 
+SQL> create table Physician(
+  2    Phys_ID number(4),
+  3    Phys_name varchar2(20),
+  4    Phys_phone number(10),
+  5    Phys_specialty varchar2(20));
+
+Table created.
+
+SQL> /
+create table Physician(
+             *
+ERROR at line 1:
+ORA-00955: name is already used by an existing object 
+
+
+SQL> 
+SQL>  populate the Physician table
+SP2-0734: unknown command beginning "populate t..." - rest of line ignored.
+SQL> insert into Physician
+  2    values(1234, 'Dr. Platapus', 1234567890, 'Footology');
+
+1 row created.
+
+SQL> insert into Physician
+  2    values(2015, 'Dr. Yosemite', 197121866 , 'Bootology');
+
+1 row created.
+
+SQL> /
+
+1 row created.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> +select * from Physician;
+SP2-0734: unknown command beginning "+select * ..." - rest of line ignored.
+SQL> /
+
+1 row created.
+
+SQL> 
+SQL> 
+SQL> select * from Physician;
+
+                                                                                           Lori Domingue Lab3                                                                                           
+   PHYS_ID PHYS_NAME            PHYS_PHONE PHYS_SPECIALTY                                                                                                                                               
+---------- -------------------- ---------- --------------------                                                                                                                                         
+      1234 Dr. Platapus         1234567890 Footology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+
+SQL> /
+
+                                                                                           Lori Domingue Lab3                                                                                           
+   PHYS_ID PHYS_NAME            PHYS_PHONE PHYS_SPECIALTY                                                                                                                                               
+---------- -------------------- ---------- --------------------                                                                                                                                         
+      1234 Dr. Platapus         1234567890 Footology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> declare
+  2  
+  3    lv_id Physician.Phys_ID%type := &id;
+  4    lv_name Physician.Phys_name%type := '&name';
+  5    lv_phone Physician.Phys_phone%type := &phone;
+  6    lv_spec Physician.Phys_specialty%type := '&spec';
+  7    lv_check number(1);
+  8    begin
+  9        select count(*) into lv_check from Physician
+ 10        where Phys_ID = lv_id;
+ 11        if lv_check = 1 then
+ 12          update Physician
+ 13            set Phys_name = lv_name,
+ 14                Phys_phone = lv_phone,
+ 15                Phys_specialty = lv_spec
+ 16            where Phys_ID = lv_id;
+ 17        else
+ 18          insert into Physician
+ 19            values (lv_id, lv_name, lv_phone, lv_spec);
+ 20        end if;
+ 21  end; -- end 2nd run
+ 22  /
+Enter value for id: 9999
+old   3:   lv_id Physician.Phys_ID%type := &id;
+new   3:   lv_id Physician.Phys_ID%type := 9999;
+Enter value for name: Lola Bunny
+old   4:   lv_name Physician.Phys_name%type := '&name';
+new   4:   lv_name Physician.Phys_name%type := 'Lola Bunny';
+Enter value for phone: 5555555
+old   5:   lv_phone Physician.Phys_phone%type := &phone;
+new   5:   lv_phone Physician.Phys_phone%type := 5555555;
+Enter value for spec: bunny
+old   6:   lv_spec Physician.Phys_specialty%type := '&spec';
+new   6:   lv_spec Physician.Phys_specialty%type := 'bunny';
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> select * from Physician;
+
+                                                                                           Lori Domingue Lab3                                                                                           
+   PHYS_ID PHYS_NAME            PHYS_PHONE PHYS_SPECIALTY                                                                                                                                               
+---------- -------------------- ---------- --------------------                                                                                                                                         
+      1234 Dr. Platapus         1234567890 Footology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+         1 1                             1 1                                                                                                                                                            
+      9999 Lola Bunny              5555555 bunny                                                                                                                                                        
+
+6 rows selected.
+
+SQL> /
+
+                                                                                           Lori Domingue Lab3                                                                                           
+   PHYS_ID PHYS_NAME            PHYS_PHONE PHYS_SPECIALTY                                                                                                                                               
+---------- -------------------- ---------- --------------------                                                                                                                                         
+      1234 Dr. Platapus         1234567890 Footology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+      2015 Dr. Yosemite          197121866 Bootology                                                                                                                                                    
+         1 1                             1 1                                                                                                                                                            
+      9999 Lola Bunny              5555555 bunny                                                                                                                                                        
+
+6 rows selected.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> drop table Physician;
+
+Table dropped.
+
+SQL> /
+drop table Physician
+           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> 
+SQL> /* Problem 05 */
+SQL> 
+SQL> create or replace function string_adjust
+  2  
+  3    (fv_string in varchar2,
+  4     fv_length in number)
+  5  
+  6     return varchar2
+  7    is
+  8  
+  9    begin
+ 10  
+ 11      return rpad(ltrim(fv_string), fv_length);
+ 12  end; -- end string_adjust function
+ 13  /
+
+Function created.
+
+SQL> 
+SQL> 
+SQL> begin
+  2  
+  3  
+  4    dbms_output.put_line('Now is the Time.'||'<end');
+  5    dbms_output.put_line(string_adjust('Now is the Time.', 6)||'<end');
+  6    dbms_output.put_line(length(string_adjust('Now is the Time.', 6)));
+  7  
+  8  
+  9    dbms_output.put_line('Now is the Time.'||'<end');
+ 10    dbms_output.put_line(string_adjust('Now is the Time.', 25)||'<end');
+ 11    dbms_output.put_line(length(string_adjust('Now is the Time.', 25)));
+ 12  
+ 13  
+ 14    dbms_output.put_line('    Now is the Time.         '||'<end');
+ 15    dbms_output.put_line(string_adjust('    Now is the Time.         ', 15)||
+ 16                                       '<end');
+ 17    dbms_output.put_line(length(string_adjust('    Now is the Time.         ',
+ 18                                              15)));
+ 19  
+ 20  end; -- end string_adjust driver
+ 21  /
+Now is the Time.<end                                                                                                                                                                                    
+Now is<end                                                                                                                                                                                              
+6                                                                                                                                                                                                       
+Now is the Time.<end                                                                                                                                                                                    
+Now is the Time.         <end                                                                                                                                                                           
+25                                                                                                                                                                                                      
+Now is the Time.         <end                                                                                                                                                                           
+Now is the Time<end                                                                                                                                                                                     
+15                                                                                                                                                                                                      
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> spool off;
